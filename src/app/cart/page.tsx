@@ -1,0 +1,16 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Minus, Plus, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react";
+import { useCart } from "@/lib/cart";
+import { PageTitle } from "@/components/Site";
+
+export default function CartPage() {
+  const items = useCart((state) => state.items);
+  const setQuantity = useCart((state) => state.setQuantity);
+  const remove = useCart((state) => state.remove);
+  const subtotal = items.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
+  const estimatedDelivery = 250;
+  return <main className="page-main"><div className="container"><PageTitle eyebrow="Your basket" title="A little care, coming your way." description="Check your items and delivery details before you continue." />{items.length === 0 ? <div className="empty-cart"><span className="empty-icon"><ShoppingBag size={27} /></span><h2>Your basket is waiting.</h2><p>Browse the shop to find the medicines and everyday essentials you need.</p><Link href="/shop" className="button button-primary">Explore the shop <ArrowRight size={17} /></Link></div> : <div className="cart-layout"><section className="cart-list"><div className="cart-list-heading"><span>{items.reduce((sum, line) => sum + line.quantity, 0)} items</span><span>Price</span></div>{items.map(({ product, quantity, packSize }) => <article className="cart-row" key={product.slug}><Link href={`/shop/${product.slug}`} className="cart-product-image"><Image src={product.image} alt={product.name} fill sizes="120px" /></Link><div className="cart-product-copy"><Link href={`/shop/${product.slug}`}><h3>{product.name}</h3></Link><span>{packSize}</span>{product.rx && <small className="rx-mini">Prescription required</small>}<button className="remove-cart" onClick={() => remove(product.slug)}><Trash2 size={14} /> Remove</button></div><div className="cart-quantity"><div className="quantity-control"><button aria-label="Decrease quantity" onClick={() => setQuantity(product.slug, quantity - 1)}><Minus size={14} /></button><span>{quantity}</span><button aria-label="Increase quantity" onClick={() => setQuantity(product.slug, quantity + 1)}><Plus size={14} /></button></div><b>KES {(product.price * quantity).toLocaleString("en-KE")}</b></div></article>)}<Link href="/shop" className="continue-shopping"><ArrowRight size={15} /> Continue shopping</Link></section><aside className="order-summary"><span className="eyebrow">Order summary</span><h2>Almost there.</h2><div className="summary-row"><span>Subtotal</span><b>KES {subtotal.toLocaleString("en-KE")}</b></div><div className="summary-row"><span>Estimated delivery</span><b>KES {estimatedDelivery}</b></div><p className="summary-zone-note">Delivery fee may vary based on your Nairobi delivery zone.</p><div className="summary-row summary-total"><span>Estimated total</span><b>KES {(subtotal + estimatedDelivery).toLocaleString("en-KE")}</b></div><Link href="/checkout" className="button button-primary button-wide">Proceed to Checkout <ArrowRight size={17} /></Link><p className="summary-secure"><ShieldCheck size={15} /> Secure checkout with M-Pesa</p>{subtotal < 1500 && <p className="free-delivery-note">Add KES {(1500 - subtotal).toLocaleString("en-KE")} more for free delivery.</p>}</aside></div>}</div></main>;
+}
